@@ -1,0 +1,272 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>浏览产品</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          rel="stylesheet" />
+</head>
+<body style="margin: 0;">
+    <el-container id="app">
+        <el-main>
+            <el-row>
+                <el-col style="padding: 10px;">
+                    <el-button type="primary"
+                               v-on:click="onViewButtonClick">
+                        view视图显示
+                    </el-button>
+                    <el-button type="primary"
+                               v-on:click="onTableButtonClick">
+                        Table表单显示
+                    </el-button>
+                    <el-button type="success" plain
+                               icon="el-icon-shopping-cart-2"
+                               v-on:click="onCartTableClick">
+                        我的订单
+                    </el-button>
+                    <el-button type="danger" plain
+                               icon="el-icon-user-solid"
+                               v-on:click="onLoginClick">
+                        登录
+                    </el-button>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col style="padding: 10px;">
+
+                    <el-button  type="success" 
+                                v-on:click="onTotalClick">
+                        结算
+                    </el-button>
+                    <el-button>清空列表</el-button>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col>
+                    <el-table :border="true"
+                              :data="products"
+                              style="width: 100%">
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="产品编号"
+                                         prop="productNumber">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="产品名称"
+                                         prop="productName">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="产品类型"
+                                         prop="productType">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="价格"
+                                         prop="price">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="数量"
+                                         prop="shuliang">
+
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="总共"
+                                         prop="total">
+
+                        </el-table-column>
+                        <el-table-column align="center"
+                                         header-align="center"
+                                         label="操作">
+                            <template slot-scope="scope">
+                                <el-button size="mini"
+                                           v-on:click="onAddClick(scope.row.id)">
+                                    增加
+                                </el-button>
+                                <el-button size="mini"
+                                           v-on:click="onDownClick(scope.row.id)">
+                                    减少
+                                </el-button>
+                                <el-button size="mini"
+                                           type="danger"
+                                           v-on:click="onDeleteButtonClick(scope.row.id)">
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-col>
+            </el-row>
+
+            <el-row>
+                <el-col style="text-align: center;">
+                    <el-form-item label="总金额"
+                                  prop="a">
+
+                    </el-form-item>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                products: [],
+                a:'0'
+            },
+            methods: {
+                async GetAllCart(order) {
+                    let response = await axios.get('/Product/GetUserCart',{params:{order:order}});
+
+                    if (response.data.code === 'success') {
+                        this.products = response.data.data;
+                    }else {
+                        this.$message({
+                            message: '记录获取失败',
+                            type: 'error'
+                        });
+                    }
+                },
+
+                onTableButtonClick() {
+                    window.location.href = "/Product/TableOrder";
+                },
+                onViewButtonClick() {
+                    window.location.href = "/Product/UserOrder";
+                    },
+                onCartTableClick() {
+                    window.location.href = "/Product/Shopping";
+                },
+                onLoginClick() {
+                    window.location.href = "/Login/Index";
+                },
+                async onAddClick(id) {
+                    let response = await axios.get('/Product/UpdateCart', { params: { id: id } });
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功！'
+                        });
+                        this.GetAllCart(this.order);
+                    } else {
+                        this.$message({
+                            message: '修改失败',
+                            type: 'error'
+                        });
+                    }
+                },
+                async onDownClick(id) {
+                    let response = await axios.get('/Product/DownCart', { params: { id: id } });
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功！'
+                        });
+                        this.GetAllCart(this.order);
+                    } else {
+                        this.$message({
+                            message: '数量是1，无法减少，若要删除，请按删除按钮',
+                            type: 'error'
+                        });
+                    }
+                },
+                async  onTotalClick() {
+                    let response = await axios.get('/Product/JieSuan');
+
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '结算成功！总金额为：  ' + response.data.data+'    元，请等待外卖送达'
+                        });
+                        this.a = response.data.data;
+                        this.GetAllCart('desc');
+                    }else {
+                        this.$message({
+                            message: '记录获取失败',
+                            type: 'error'
+                        });
+                    }
+                        
+                    },
+                onDeleteButtonClick(id) {
+                    this.$confirm('确定删除该产品吗？',
+                            '提示',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            })
+                        .then(async () => {
+                            await this.deleteCart(id);
+                        })
+                        .catch(() => { });;
+
+                },
+                async YanUser() {
+                    // 检索用户是否登录
+                    let response = await axios.get('/Login/YanUser');
+
+                    if (response.data.code === 'success') {
+                        this.GetAllCart('desc');
+                    } else {
+                        this.$message({
+                            message: '您还未登录',
+                            type: 'error'
+                        });
+                        this.$confirm('您还未登录，请进入登录界面登录,确定进入登录页面吗？',
+                            '提示',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            })
+                            .then(async () => {
+                                window.location.href = "/Login/Index";
+                            })
+                            .catch(async() => {
+                                window.location.href = "/Product/UserOrder";
+                            });;
+                    }
+                },
+                async deleteCart(id) {
+                    let response = await axios.get('/Product/DeleteCart/', { params: { id: id } });
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '删除记录成功！'
+                        });
+                        this.GetAllCart(this.order);
+                    } else {
+                        this.$message({
+                            message: '删除记录失败',
+                            type: 'error'
+                        });
+                    }
+                }
+            },
+
+            mounted() {
+                this.YanUser();
+                
+                
+            }
+        });
+    </script>
+</body>
+
+</html>

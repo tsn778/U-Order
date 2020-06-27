@@ -1,0 +1,191 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>浏览产品</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          rel="stylesheet" />
+</head>
+<body style="margin: 0;">
+    <el-container id="app">
+        <el-main>
+            <el-row>
+                <el-col style="padding: 10px;">
+                    <el-button type="primary"
+                               v-on:click="onAddButtonClick">
+                        新增
+                    </el-button>
+                    <el-button type="primary"
+                               v-on:click="onViewButtonClick">
+                        视图显示
+                    </el-button>
+                    <el-button type="primary"
+                               v-on:click="onTableButtonClick">
+                        列表显示
+                    </el-button>
+                    <el-button type="danger"
+                               icon="el-icon-user-solid"
+                               v-on:click="onLoginButtonClick">
+                        登录
+                    </el-button>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col>
+                    <el-table :border="true"
+                              :data="products"
+                              style="width: 100%">
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="编号"
+                                         prop="id">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="金额"
+                                         prop="total">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="地址"
+                                         prop="adress">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="用户名"
+                                         prop="userName">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="状态"
+                                         prop="zhuangtai">
+                        </el-table-column>
+                        <el-table-column align="center"
+                                         header-align="center"
+                                         label="操作">
+                            <template slot-scope="scope">
+                                <el-button size="mini"
+                                           type="success"
+                                           v-on:click="onOneClick(scope.row.id)">
+                                    已送达
+                                </el-button>
+                                <el-button size="mini"
+                                           type="danger"
+                                           v-on:click="onTwoClick(scope.row.id)">
+                                    已完成
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                products: []
+            },
+            methods: {
+                async GetAllProducts() {
+                    let response = await axios.get('/Product/GetAllLine');
+
+                    if (response.data.code === 'success') {
+                        this.products = response.data.data;
+                    }else {
+                        this.$message({
+                            message: '记录获取失败',
+                            type: 'error'
+                        });
+                    }
+                },
+                async YanManage(order) {
+                    // 用户验证
+                    let response = await axios.get('/Login/YanManage');
+
+                    if (response.data.code === 'success') {
+                        this.GetAllProducts();
+                    } else {
+                        this.$message({
+                            message: '请进入登录界面登录管理员',
+                            type: 'error'
+                        });
+                        this.$confirm('请进入登录界面登录管理员,确定进入登录页面吗？',
+                            '提示',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            })
+                            .then(async () => {
+                                window.location.href = "/Login/Index";
+                            })
+                            .catch(async() => { window.location.href = "/Product/UserOrder";});;
+                    }
+                },
+                onAddButtonClick() {
+                    window.location.href = "/Product/Create";
+                },
+                onTableButtonClick() {
+                    window.location.href = "/Product/Table";
+                },
+                onViewClick() {
+                    window.location.href = "/Product/Index";
+                },
+                onLoginButtonClick() {
+                    window.location.href = "/Login/Index";
+                    },
+                
+                async onOneClick(id) {
+                    let response = await axios.get('/Product/One/', { params: { id: id } });
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '删除记录成功！'
+                        });
+                        this.GetAllProducts(this.order);
+                    } else {
+                        this.$message({
+                            message: '删除记录失败',
+                            type: 'error'
+                        });
+                    }
+                },
+               
+                async onTwoClick(id) {
+                    let response = await axios.get('/Product/Two/', { params: { id: id } });
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '删除记录成功！'
+                        });
+                        this.GetAllProducts(this.order);
+                    } else {
+                        this.$message({
+                            message: '删除记录失败',
+                            type: 'error'
+                        });
+                    }
+                },
+            },
+            mounted() {
+                this.GetAllProducts();
+                this.YanManage();
+            }
+        });
+    </script>
+</body>
+
+</html>
